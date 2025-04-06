@@ -1,0 +1,187 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: monospace;
+}
+
+body {
+    background-color: #000;
+    color: #0ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.mdr-console {
+    border: 4px solid #0cc;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #001;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #0cc;
+    padding-bottom: 10px;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.location-name {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.progress-bar-container {
+    width: 300px;
+    height: 14px;
+    background-color: #013;
+    border: 1px solid #0cc;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #0ff;
+    width: 67%;
+}
+
+.completion-percentage {
+    font-size: 18px;
+}
+
+/* Logo styles moved to logo.css */
+
+.number-grid {
+    display: grid;
+    grid-template-columns: repeat(20, 1fr);
+    gap: 5px;
+    margin-bottom: 20px;
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+}
+
+.number {
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.number.selected {
+    color: #fff;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.bins-container {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+.bin {
+    flex: 1;
+    text-align: center;
+    border: 1px solid #0cc;
+    padding: 10px;
+}
+
+.bin-label {
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.bin-progress-container {
+    height: 16px;
+    background-color: #013;
+    border: 1px solid #0cc;
+    margin-bottom: 5px;
+}
+
+.bin-progress {
+    height: 100%;
+    background-color: #0ff;
+}
+
+#bin-1-progress { width: 27%; }
+#bin-2-progress { width: 75%; }
+#bin-3-progress { width: 59%; }
+#bin-4-progress { width: 42%; }
+#bin-5-progress { width: 78%; }
+
+.hex-values {
+    text-align: center;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+.controls {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+}
+
+#new-file-btn {
+    background-color: #0cc;
+    color: #001;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s;
+}
+
+#new-file-btn:hover {
+    background-color: #0ff;
+    box-shadow: 0 0 10px #0ff;
+}
+
+.instructions {
+    color: #0cc;
+    text-align: left;
+    max-width: 500px;
+    margin: 0 auto;
+    background-color: rgba(0, 20, 40, 0.6);
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.instructions h3 {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.instructions p {
+    margin-bottom: 5px;
+}
+
+/* For numbers to be draggable */
+.number.dragging {
+    opacity: 0.5;
+} 

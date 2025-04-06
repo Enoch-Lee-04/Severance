@@ -1,0 +1,27 @@
+{
+  "name": "severance-mdr-simulator",
+  "version": "1.0.0",
+  "description": "A web-based simulator of the MDR task from the Apple TV+ show Severance",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "severance",
+    "mdr",
+    "lumon",
+    "simulator",
+    "game"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "fs": "^0.0.1-security",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+} 
