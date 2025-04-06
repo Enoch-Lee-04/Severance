@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Set random progress for bins
         for (let bin = 1; bin <= 5; bin++) {
-            gameState.bins[bin].progress = Math.floor(Math.random() * gameState.bins[bin].max);
+            gameState.bins[bin].progress = 0;
             updateBinProgress(bin);
         }
         

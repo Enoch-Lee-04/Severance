@@ -7,7 +7,7 @@
 
 body {
     background-color: #000;
-    color: #0ff;
+    color: rgb(172, 255, 255);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -23,7 +23,7 @@ body {
 }
 
 .mdr-console {
-    border: 4px solid #0cc;
+    border: 4px solid rgb(172, 255, 255);
     border-radius: 10px;
     padding: 20px;
     background-color: #001;
@@ -35,7 +35,7 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    border-bottom: 2px solid #0cc;
+    border-bottom: 2px solid rgb(172, 255, 255);
     padding-bottom: 10px;
 }
 
@@ -54,12 +54,12 @@ body {
     width: 300px;
     height: 14px;
     background-color: #013;
-    border: 1px solid #0cc;
+    border: 1px solid rgb(172, 255, 255);
 }
 
 .progress-bar {
     height: 100%;
-    background-color: #0ff;
+    background-color: rgb(172, 255, 255);
     width: 67%;
 }
 
@@ -90,7 +90,7 @@ body {
 
 .number.selected {
     color: #fff;
-    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+    text-shadow: 0 0 10px rgb(172, 255, 255), 0 0 20px rgb(172, 255, 255);
     font-size: 24px;
     font-weight: bold;
 }
@@ -105,7 +105,7 @@ body {
 .bin {
     flex: 1;
     text-align: center;
-    border: 1px solid #0cc;
+    border: 1px solid rgb(172, 255, 255);
     padding: 10px;
 }
 
@@ -117,13 +117,13 @@ body {
 .bin-progress-container {
     height: 16px;
     background-color: #013;
-    border: 1px solid #0cc;
+    border: 1px solid rgb(172, 255, 255);
     margin-bottom: 5px;
 }
 
 .bin-progress {
     height: 100%;
-    background-color: #0ff;
+    background-color: rgb(172, 255, 255);
 }
 
 #bin-1-progress { width: 27%; }
@@ -146,7 +146,7 @@ body {
 }
 
 #new-file-btn {
-    background-color: #0cc;
+    background-color: rgb(172, 255, 255);
     color: #001;
     border: none;
     padding: 10px 20px;
@@ -163,7 +163,7 @@ body {
 }
 
 .instructions {
-    color: #0cc;
+    color: rgb(172, 255, 255);
     text-align: left;
     max-width: 500px;
     margin: 0 auto;
