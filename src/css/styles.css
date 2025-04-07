@@ -53,19 +53,31 @@ body {
     font-family: monospace;
     font-size: 28px;
     font-weight: bold;
+    position: relative;
+    z-index: 2;
+    margin-left: 10px;
+    mix-blend-mode: difference;
 }
 
 .progress-bar-container {
-    width: 1300px;
-    height: 25px;
+    width: 1600px;
+    height: 35px;
     background-color: #013;
     border: 1px solid rgb(172, 255, 255);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
 }
 
 .progress-bar {
     height: 100%;
     background-color: rgb(172, 255, 255);
-    width: 67%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
 }
 
 .completion-percentage {
@@ -74,6 +86,10 @@ body {
     font-weight: bold;
     -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 1px rgb(172, 255, 255);
+    position: relative;
+    z-index: 2;
+    margin-right: 10px;
+    mix-blend-mode: difference;
 }
 
 /* Logo styles */
@@ -123,19 +139,20 @@ body {
 
 .bins-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     margin: 10px -15px 10px -15px;
     padding: 10px 15px;
     flex-shrink: 0;
     background-color: #001;
     border-bottom: 2px solid rgb(172, 255, 255);
+    gap: 20px;
 }
 
 .bin {
-    flex: 1;
+    flex: 0 0 auto;
     text-align: center;
     padding: 0;
-    margin: 0 100px;
+    margin: 0;
 }
 
 .bin:not(:first-child)::before {
@@ -198,11 +215,11 @@ body {
     mix-blend-mode: difference;
 }
 
-#bin-1-progress { width: 27%; }
+/*#bin-1-progress { width: 27%; }
 #bin-2-progress { width: 75%; }
 #bin-3-progress { width: 59%; }
 #bin-4-progress { width: 42%; }
-#bin-5-progress { width: 78%; }
+#bin-5-progress { width: 78%; }*/
 
 .hex-values {
     text-align: center;
