@@ -130,11 +130,32 @@ body {
     aspect-ratio: 1;
 }
 
+/* Primary highlight for the number being hovered over */
+.primary-highlight {
+    color: #fff;
+    text-shadow: 0 0 10px rgb(172, 255, 255), 0 0 20px rgb(172, 255, 255);
+    font-size: 32px;
+    font-weight: bold;
+    z-index: 10;
+    transform: scale(1.2);
+}
+
+/* Neighbor highlight for adjacent numbers */
+.neighbor-highlight {
+    color: #fff;
+    text-shadow: 0 0 5px rgb(172, 255, 255);
+    font-size: 24px;
+    z-index: 5;
+    transform: scale(1.1);
+}
+
 .number.selected {
     color: #fff;
     text-shadow: 0 0 10px rgb(172, 255, 255), 0 0 20px rgb(172, 255, 255);
-    font-size: 24px;
+    font-size: 32px;
     font-weight: bold;
+    z-index: 10;
+    transform: scale(1.2);
 }
 
 .bins-container {
@@ -153,6 +174,8 @@ body {
     text-align: center;
     padding: 0;
     margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .bin:not(:first-child)::before {
@@ -295,4 +318,20 @@ body {
     .progress-bar-container {
         width: 150px;
     }
+}
+
+.bin-active .bin-label-container,
+.bin-active .bin-progress-container {
+    box-shadow: 0 0 8px rgba(172, 255, 255, 0.5);
+}
+
+.bin-hover .bin-label-container,
+.bin-hover .bin-progress-container {
+    box-shadow: 0 0 15px rgba(172, 255, 255, 0.8);
+}
+
+.bin-clicked .bin-label-container,
+.bin-clicked .bin-progress-container {
+    box-shadow: 0 0 20px rgba(172, 255, 255, 1);
+    transform: scale(1.05);
 } 
