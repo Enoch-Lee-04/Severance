@@ -31,6 +31,8 @@ body {
     display: flex;
     flex-direction: column;
     height: 95vh;
+    position: relative;
+    overflow: hidden;
 }
 
 .header {
@@ -106,17 +108,55 @@ body {
     object-fit: contain;
 }
 
+.number-grid-wrapper {
+    flex-grow: 1;
+    overflow: auto;
+    position: relative;
+    border-bottom: 2px solid rgb(172, 255, 255);
+    padding-bottom: 10px;
+    scroll-behavior: smooth;
+    will-change: transform;
+}
+
+.zoom-indicator {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: rgba(0, 13, 30, 0.7);
+    border: 1px solid rgb(172, 255, 255);
+    color: rgb(172, 255, 255);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.zoom-indicator.hidden {
+    opacity: 0;
+}
+
 .number-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
     gap: 5px;
-    flex-grow: 1;
-    overflow: auto;
     min-height: 60vh;
+    min-width: 400vw;
     margin-bottom: 0;
     position: relative;
-    border-bottom: 2px solid rgb(172, 255, 255);
-    padding-bottom: 10px;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+    contain: layout style paint;
+}
+
+.number-grid.zoomed-in {
+    transform: scale(1.5);
+}
+
+.number-grid.zoomed-out {
+    transform: scale(0.8);
 }
 
 .number {
@@ -133,7 +173,6 @@ body {
 /* Primary highlight for the number being hovered over */
 .primary-highlight {
     color: #fff;
-    text-shadow: 0 0 10px rgb(172, 255, 255), 0 0 20px rgb(172, 255, 255);
     font-size: 32px;
     font-weight: bold;
     z-index: 10;
@@ -143,7 +182,6 @@ body {
 /* Neighbor highlight for adjacent numbers */
 .neighbor-highlight {
     color: #fff;
-    text-shadow: 0 0 5px rgb(172, 255, 255);
     font-size: 24px;
     z-index: 5;
     transform: scale(1.1);
@@ -151,7 +189,6 @@ body {
 
 .number.selected {
     color: #fff;
-    text-shadow: 0 0 10px rgb(172, 255, 255), 0 0 20px rgb(172, 255, 255);
     font-size: 32px;
     font-weight: bold;
     z-index: 10;
@@ -319,19 +356,3 @@ body {
         width: 150px;
     }
 }
-
-.bin-active .bin-label-container,
-.bin-active .bin-progress-container {
-    box-shadow: 0 0 8px rgba(172, 255, 255, 0.5);
-}
-
-.bin-hover .bin-label-container,
-.bin-hover .bin-progress-container {
-    box-shadow: 0 0 15px rgba(172, 255, 255, 0.8);
-}
-
-.bin-clicked .bin-label-container,
-.bin-clicked .bin-progress-container {
-    box-shadow: 0 0 20px rgba(172, 255, 255, 1);
-    transform: scale(1.05);
-} 
