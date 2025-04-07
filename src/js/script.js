@@ -202,10 +202,86 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
         });
+        
+        // Setup cursor-based scrolling for the grid wrapper
+        setupCursorScroll();
+    }
+    
+    // Setup cursor-based scrolling
+    function setupCursorScroll() {
+        const gridWrapper = document.querySelector('.number-grid-wrapper');
+        let isDragging = false;
+        let startX, startY, scrollLeft, scrollTop;
+        
+        // When mouse button is pressed down
+        gridWrapper.addEventListener('mousedown', (e) => {
+            // Skip if we clicked directly on a number (to preserve selection behavior)
+            if (e.target.classList.contains('number')) {
+                return;
+            }
+            
+            isDragging = true;
+            gridWrapper.style.cursor = 'grabbing';
+            startX = e.clientX;
+            startY = e.clientY;
+            scrollLeft = gridWrapper.scrollLeft;
+            scrollTop = gridWrapper.scrollTop;
+            
+            // Prevent default behavior
+            e.preventDefault();
+        });
+        
+        // When mouse moves
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            const x = e.clientX - startX;
+            const y = e.clientY - startY;
+            
+            // Scroll the grid wrapper based on cursor movement
+            gridWrapper.scrollTo({
+                left: scrollLeft - x,
+                top: scrollTop - y,
+                behavior: 'auto' // Direct dragging
+            });
+        });
+        
+        // When mouse button is released
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            gridWrapper.style.cursor = 'default';
+        });
+        
+        // When mouse leaves the window
+        window.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                isDragging = false;
+                gridWrapper.style.cursor = 'default';
+            }
+        });
+        
+        // Prevent drag interference
+        gridWrapper.addEventListener('dragstart', (e) => e.preventDefault());
     }
     
     // Update zoom level visual
     function updateZoom() {
+        // Get grid wrapper for scroll position
+        const gridWrapper = document.querySelector('.number-grid-wrapper');
+        
+        // Calculate the center of the viewport in the grid's coordinate system
+        const viewportWidth = gridWrapper.clientWidth;
+        const viewportHeight = gridWrapper.clientHeight;
+        const scrollLeft = gridWrapper.scrollLeft;
+        const scrollTop = gridWrapper.scrollTop;
+        
+        // Calculate the center point (where we want to zoom around)
+        const centerX = scrollLeft + viewportWidth / 2;
+        const centerY = scrollTop + viewportHeight / 2;
+        
         // Remove existing zoom classes
         numberGrid.classList.remove('zoomed-in', 'zoomed-out');
         
@@ -218,6 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (zoomLevel < 1) {
             numberGrid.classList.add('zoomed-out');
         }
+        
+        // Adjust scroll position to maintain center point after zoom
+        gridWrapper.scrollLeft = centerX - viewportWidth / 2;
+        gridWrapper.scrollTop = centerY - viewportHeight / 2;
         
         // Update zoom indicator
         zoomIndicator.textContent = `Zoom: ${Math.round(zoomLevel * 100)}%`;
@@ -249,6 +329,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const randomNum = Math.floor(Math.random() * 10);
             number.textContent = randomNum;
             number.dataset.value = randomNum;
+            
+            // Add randomized floating animation properties
+            // Random x and y offset for floating (small enough to not break the grid layout)
+            const xOffset = (Math.random() * 6) - 3; // -3px to +3px
+            const yOffset = (Math.random() * 6) - 3; // -3px to +3px
+            
+            // Random animation delay (creates more organic movement)
+            const delay = Math.random() * 2000; // 0-2000ms delay
+            
+            // Apply as CSS custom properties
+            number.style.setProperty('--x-offset', xOffset);
+            number.style.setProperty('--y-offset', yOffset);
+            number.style.setProperty('--animation-delay', delay);
             
             // No need for individual click handlers with event delegation
             
