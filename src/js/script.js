@@ -9,18 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hexValue2 = document.getElementById('hex-value-2');
     const zoomIndicator = document.getElementById('zoom-indicator');
     
-    // Performance mode - reduces grid size for testing
-    let performanceMode = false;
-    
-    // Add performance mode toggle key (press 'P' to toggle)
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'p' || e.key === 'P') {
-            performanceMode = !performanceMode;
-            alert(`Performance mode ${performanceMode ? 'enabled' : 'disabled'}. Grid will update on next refresh.`);
-            initGame();
-        }
-    });
-    
     // Bin progress elements
     const binProgressElements = {
         1: document.getElementById('bin-1-progress'),
@@ -56,20 +44,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Calculate how many numbers to generate based on viewport size
     function calculateNumbersCount() {
-        // For "almost infinite" grid, multiply by a large factor
+        // Estimate based on screen size
         const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         
-        // Calculate base dimensions
-        // For horizontal expansion, use much larger width factor
-        const columns = Math.floor(viewportWidth * (performanceMode ? 1 : 4) / 35);
+        // Approximate how many cells will fit in the grid
+        // Assuming each cell is about 35px (including gap)
+        const columns = Math.floor(viewportWidth * 0.9 / 35);
         const rows = Math.floor((viewportHeight * 0.6) / 35);
         
-        // Multiply by a large factor to create an "almost infinite" grid
-        // Use a factor that's large but not so large it crashes browsers
-        const infinityFactor = performanceMode ? 2 : 7;
-        
-        return Math.max(columns * rows * infinityFactor, performanceMode ? 500 : 2000);
+        // Return just enough numbers to fill the screen plus a small margin
+        return Math.max(columns * rows, 400);
     }
     
     // Game state
@@ -90,16 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize the game
     function initGame() {
-        // Update the total numbers count based on current viewport
+        // Clear existing numbers
+        numberGrid.innerHTML = '';
+        gameState.gridNumbers = [];
+        
+        // Calculate how many numbers to show
         gameState.totalNumbers = calculateNumbersCount();
         
-        // Clear the grid
-        numberGrid.innerHTML = '';
-        
         // Reset game state
-        gameState.selectedNumbers = [];
         gameState.completedNumbers = 0;
-        gameState.gridNumbers = [];
+        gameState.selectedNumbers = [];
+        gameState.activeBin = 1;
         
         // Reset zoom level
         zoomLevel = 1;
@@ -429,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Select a number
     function selectNumber(numberElement) {
         // Don't allow selection of already processed numbers
-        if (numberElement.style.opacity === '0.3') {
+        if (numberElement.style.visibility === 'hidden') {
             return;
         }
         
@@ -509,9 +495,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add a number to a bin
     function addNumberToBin(numberElement, binIndex) {
-        // Mark the number as processed
+        // Make the number disappear from the grid instead of becoming transparent
         numberElement.classList.remove('selected');
-        numberElement.style.opacity = '0.3';
+        numberElement.style.visibility = 'hidden'; // Hide the number but keep its space
         numberElement.style.pointerEvents = 'none';
         
         // Increment the bin's progress
@@ -547,16 +533,16 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.gridNumbers.forEach(number => {
             // Check if element is at least partially visible in viewport
             const rect = number.getBoundingClientRect();
-            const isVisible = (
+            const isInViewport = (
                 rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
                 rect.left <= (window.innerWidth || document.documentElement.clientWidth) &&
                 rect.bottom >= 0 &&
                 rect.right >= 0
             );
             
-            if (isVisible) {
+            if (isInViewport) {
                 visibleTotal++;
-                if (number.style.opacity === '0.3') {
+                if (number.style.visibility === 'hidden') {
                     visibleCompleted++;
                 }
             }
