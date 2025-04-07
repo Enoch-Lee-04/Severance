@@ -7,6 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const newFileBtn = document.getElementById('new-file-btn');
     const hexValue1 = document.getElementById('hex-value-1');
     const hexValue2 = document.getElementById('hex-value-2');
+    const zoomIndicator = document.getElementById('zoom-indicator');
+    
+    // Performance mode - reduces grid size for testing
+    let performanceMode = false;
+    
+    // Add performance mode toggle key (press 'P' to toggle)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'p' || e.key === 'P') {
+            performanceMode = !performanceMode;
+            alert(`Performance mode ${performanceMode ? 'enabled' : 'disabled'}. Grid will update on next refresh.`);
+            initGame();
+        }
+    });
     
     // Bin progress elements
     const binProgressElements = {
@@ -34,19 +47,29 @@ document.addEventListener('DOMContentLoaded', () => {
         'Gettysburg', 'Fredericksburg', 'Cedar Creek'
     ];
     
+    // Zoom state
+    let zoomLevel = 1; // 1 = normal, >1 = zoomed in, <1 = zoomed out
+    const zoomStep = 0.1;
+    const maxZoom = 2;
+    const minZoom = 0.5;
+    let zoomIndicatorTimeout;
+    
     // Calculate how many numbers to generate based on viewport size
     function calculateNumbersCount() {
-        // Estimate based on screen size
+        // For "almost infinite" grid, multiply by a large factor
         const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
         const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
         
-        // Approximate how many cells will fit in the grid
-        // Assuming each cell is about 35px (including gap)
-        const columns = Math.floor(viewportWidth * 0.9 / 35);
+        // Calculate base dimensions
+        // For horizontal expansion, use much larger width factor
+        const columns = Math.floor(viewportWidth * (performanceMode ? 1 : 4) / 35);
         const rows = Math.floor((viewportHeight * 0.6) / 35);
         
-        // Ensure we have at least 20x20 = 400 numbers
-        return Math.max(columns * rows, 400);
+        // Multiply by a large factor to create an "almost infinite" grid
+        // Use a factor that's large but not so large it crashes browsers
+        const infinityFactor = performanceMode ? 2 : 7;
+        
+        return Math.max(columns * rows * infinityFactor, performanceMode ? 500 : 2000);
     }
     
     // Game state
@@ -78,6 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.completedNumbers = 0;
         gameState.gridNumbers = [];
         
+        // Reset zoom level
+        zoomLevel = 1;
+        updateZoom();
+        
         // Set bins progress to 0
         for (let bin = 1; bin <= 5; bin++) {
             gameState.bins[bin].progress = 0;
@@ -102,6 +129,105 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Initialize bins for click interaction
         initBins();
+        
+        // Initialize zoom functionality
+        setupZoom();
+    }
+    
+    // Setup zoom functionality
+    function setupZoom() {
+        // Add wheel event listener to the number grid
+        numberGrid.addEventListener('wheel', (e) => {
+            // Prevent default scrolling behavior
+            e.preventDefault();
+            
+            // Determine zoom direction
+            if (e.deltaY < 0) {
+                // Scroll up - zoom in
+                zoomLevel = Math.min(maxZoom, zoomLevel + zoomStep);
+            } else {
+                // Scroll down - zoom out
+                zoomLevel = Math.max(minZoom, zoomLevel - zoomStep);
+            }
+            
+            updateZoom();
+        });
+        
+        // Keyboard shortcuts for zooming
+        document.addEventListener('keydown', (e) => {
+            // Use + and - keys for zooming
+            if (e.key === '+' || e.key === '=') {
+                // Zoom in
+                zoomLevel = Math.min(maxZoom, zoomLevel + zoomStep);
+                updateZoom();
+            } else if (e.key === '-' || e.key === '_') {
+                // Zoom out
+                zoomLevel = Math.max(minZoom, zoomLevel - zoomStep);
+                updateZoom();
+            } else if (e.key === '0') {
+                // Reset zoom
+                zoomLevel = 1;
+                updateZoom();
+            }
+            
+            // Grid navigation with arrow keys and WASD
+            const gridWrapper = document.querySelector('.number-grid-wrapper');
+            const scrollAmount = 40; // Pixels to scroll per keypress
+            
+            // Arrow keys and WASD for navigation
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    e.preventDefault();
+                    gridWrapper.scrollBy(0, -scrollAmount);
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    e.preventDefault();
+                    gridWrapper.scrollBy(0, scrollAmount);
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    e.preventDefault();
+                    gridWrapper.scrollBy(-scrollAmount * 2, 0); // Double horizontal scroll amount
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    e.preventDefault();
+                    gridWrapper.scrollBy(scrollAmount * 2, 0); // Double horizontal scroll amount
+                    break;
+            }
+        });
+    }
+    
+    // Update zoom level visual
+    function updateZoom() {
+        // Remove existing zoom classes
+        numberGrid.classList.remove('zoomed-in', 'zoomed-out');
+        
+        // Apply custom scale transform
+        numberGrid.style.transform = `scale(${zoomLevel})`;
+        
+        // Apply appropriate class for additional styling if needed
+        if (zoomLevel > 1) {
+            numberGrid.classList.add('zoomed-in');
+        } else if (zoomLevel < 1) {
+            numberGrid.classList.add('zoomed-out');
+        }
+        
+        // Update zoom indicator
+        zoomIndicator.textContent = `Zoom: ${Math.round(zoomLevel * 100)}%`;
+        zoomIndicator.classList.remove('hidden');
+        
+        // Hide indicator after delay
+        clearTimeout(zoomIndicatorTimeout);
+        zoomIndicatorTimeout = setTimeout(() => {
+            zoomIndicator.classList.add('hidden');
+        }, 2000);
     }
     
     // Generate random numbers for the grid
@@ -110,6 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const gridStyle = window.getComputedStyle(numberGrid);
         const gridTemplateColumns = gridStyle.getPropertyValue('grid-template-columns');
         gameState.gridColumns = gridTemplateColumns.split(' ').length;
+        
+        // Create a document fragment for better performance
+        const fragment = document.createDocumentFragment();
         
         for (let i = 0; i < gameState.totalNumbers; i++) {
             const number = document.createElement('div');
@@ -121,28 +250,41 @@ document.addEventListener('DOMContentLoaded', () => {
             number.textContent = randomNum;
             number.dataset.value = randomNum;
             
-            // Make numbers selectable
-            number.addEventListener('click', () => {
-                selectNumber(number);
-            });
+            // No need for individual click handlers with event delegation
             
-            numberGrid.appendChild(number);
+            fragment.appendChild(number);
             gameState.gridNumbers.push(number);
         }
+        
+        // Append all numbers at once
+        numberGrid.appendChild(fragment);
     }
     
     // Setup hover effects for neighboring numbers
     function setupHoverEffects() {
-        const numberElements = document.querySelectorAll('.number');
+        // Use event delegation instead of attaching listeners to each element
+        numberGrid.addEventListener('mouseover', (e) => {
+            const target = e.target;
+            // Check if the hovered element is a number
+            if (target.classList.contains('number')) {
+                highlightNeighbors(target);
+            }
+        });
         
-        numberElements.forEach(number => {
-            number.addEventListener('mouseenter', () => {
-                highlightNeighbors(number);
-            });
-            
-            number.addEventListener('mouseleave', () => {
+        numberGrid.addEventListener('mouseout', (e) => {
+            const target = e.target;
+            // Only reset highlights when moving out of a number
+            if (target.classList.contains('number')) {
                 resetHighlights();
-            });
+            }
+        });
+        
+        // Use event delegation for clicks too
+        numberGrid.addEventListener('click', (e) => {
+            const target = e.target;
+            if (target.classList.contains('number')) {
+                selectNumber(target);
+            }
         });
     }
     
@@ -165,9 +307,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Only highlight if it's a direct neighbor (handles edge cases)
                 const centerRow = Math.floor(index / cols);
                 const neighborRow = Math.floor(neighborIndex / cols);
+                const centerCol = index % cols;
+                const neighborCol = neighborIndex % cols;
                 
                 // Make sure we're not wrapping to the next/previous row incorrectly
-                if (Math.abs(centerRow - neighborRow) <= 1) {
+                // Check both row and column differences to prevent wrapping
+                if (Math.abs(centerRow - neighborRow) <= 1 && Math.abs(centerCol - neighborCol) <= 1) {
                     neighborNumber.classList.add('neighbor-highlight');
                 }
             }
@@ -301,11 +446,39 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Update overall progress
     function updateProgress() {
-        const percentage = Math.floor((gameState.completedNumbers / gameState.totalNumbers) * 100);
+        // Calculate percentage based on visible grid numbers that are processed
+        // This way, users can still complete the task even with an "infinite" grid
+        let visibleTotal = 0;
+        let visibleCompleted = 0;
+        
+        gameState.gridNumbers.forEach(number => {
+            // Check if element is at least partially visible in viewport
+            const rect = number.getBoundingClientRect();
+            const isVisible = (
+                rect.top <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.left <= (window.innerWidth || document.documentElement.clientWidth) &&
+                rect.bottom >= 0 &&
+                rect.right >= 0
+            );
+            
+            if (isVisible) {
+                visibleTotal++;
+                if (number.style.opacity === '0.3') {
+                    visibleCompleted++;
+                }
+            }
+        });
+        
+        // Use visible numbers as the basis for completion percentage
+        // If no visible numbers, fall back to overall count with a minimum threshold
+        const percentage = visibleTotal > 0 ? 
+            Math.floor((visibleCompleted / visibleTotal) * 100) : 
+            Math.floor((gameState.completedNumbers / Math.min(500, gameState.totalNumbers)) * 100);
+        
         completionPercentage.textContent = `${percentage}% Complete`;
         mainProgress.style.width = `${percentage}%`;
         
-        // Check if the file is complete
+        // Check if the file is complete (visible area is processed)
         if (percentage >= 100) {
             setTimeout(() => {
                 alert('File processing complete! Praise Kier!');
