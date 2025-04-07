@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
             4: { progress: 0, max: 30 },
             5: { progress: 0, max: 30 }
         },
-        draggedNumber: null
+        gridColumns: 0,
+        gridNumbers: []
     };
     
     // Initialize the game
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset game state
         gameState.selectedNumbers = [];
         gameState.completedNumbers = 0;
+        gameState.gridNumbers = [];
         
         // Set bins progress to 0
         for (let bin = 1; bin <= 5; bin++) {
@@ -94,13 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update progress
         updateProgress();
+        
+        // Add hover effects
+        setupHoverEffects();
+        
+        // Initialize bins for click interaction
+        initBins();
     }
     
     // Generate random numbers for the grid
     function generateNumbers() {
+        // Calculate number of columns to help with hover effects
+        const gridStyle = window.getComputedStyle(numberGrid);
+        const gridTemplateColumns = gridStyle.getPropertyValue('grid-template-columns');
+        gameState.gridColumns = gridTemplateColumns.split(' ').length;
+        
         for (let i = 0; i < gameState.totalNumbers; i++) {
             const number = document.createElement('div');
             number.className = 'number';
+            number.dataset.index = i;
             
             // Random single digit
             const randomNum = Math.floor(Math.random() * 10);
@@ -112,25 +126,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectNumber(number);
             });
             
-            // Make numbers draggable
-            number.setAttribute('draggable', true);
-            number.addEventListener('dragstart', (e) => {
-                number.classList.add('dragging');
-                gameState.draggedNumber = number;
-                e.dataTransfer.setData('text/plain', number.dataset.value);
-            });
-            
-            number.addEventListener('dragend', () => {
-                number.classList.remove('dragging');
-                gameState.draggedNumber = null;
-            });
-            
             numberGrid.appendChild(number);
+            gameState.gridNumbers.push(number);
         }
+    }
+    
+    // Setup hover effects for neighboring numbers
+    function setupHoverEffects() {
+        const numberElements = document.querySelectorAll('.number');
+        
+        numberElements.forEach(number => {
+            number.addEventListener('mouseenter', () => {
+                highlightNeighbors(number);
+            });
+            
+            number.addEventListener('mouseleave', () => {
+                resetHighlights();
+            });
+        });
+    }
+    
+    // Highlight neighboring numbers
+    function highlightNeighbors(centerNumber) {
+        const index = parseInt(centerNumber.dataset.index);
+        const cols = gameState.gridColumns;
+        
+        // Calculate neighbor indices
+        const neighbors = [
+            index - cols - 1, index - cols, index - cols + 1,  // Above
+            index - 1,                     index + 1,          // Sides
+            index + cols - 1, index + cols, index + cols + 1   // Below
+        ];
+        
+        // Highlight neighbors
+        neighbors.forEach(neighborIndex => {
+            if (neighborIndex >= 0 && neighborIndex < gameState.gridNumbers.length) {
+                const neighborNumber = gameState.gridNumbers[neighborIndex];
+                // Only highlight if it's a direct neighbor (handles edge cases)
+                const centerRow = Math.floor(index / cols);
+                const neighborRow = Math.floor(neighborIndex / cols);
+                
+                // Make sure we're not wrapping to the next/previous row incorrectly
+                if (Math.abs(centerRow - neighborRow) <= 1) {
+                    neighborNumber.classList.add('neighbor-highlight');
+                }
+            }
+        });
+        
+        // Add the primary highlight to the hovered number
+        centerNumber.classList.add('primary-highlight');
+    }
+    
+    // Reset all highlights
+    function resetHighlights() {
+        document.querySelectorAll('.primary-highlight').forEach(el => {
+            el.classList.remove('primary-highlight');
+        });
+        
+        document.querySelectorAll('.neighbor-highlight').forEach(el => {
+            el.classList.remove('neighbor-highlight');
+        });
     }
     
     // Select a number
     function selectNumber(numberElement) {
+        // Don't allow selection of already processed numbers
+        if (numberElement.style.opacity === '0.3') {
+            return;
+        }
+        
         // Toggle selection
         if (numberElement.classList.contains('selected')) {
             numberElement.classList.remove('selected');
@@ -139,45 +203,68 @@ document.addEventListener('DOMContentLoaded', () => {
             numberElement.classList.add('selected');
             gameState.selectedNumbers.push(numberElement);
         }
+        
+        // Update UI to show active selection
+        updateSelectionStatus();
     }
     
-    // Initialize bin droppable areas
+    // Update the UI to reflect the current selection status
+    function updateSelectionStatus() {
+        // If there are selected numbers, highlight the bins to indicate they can be clicked
+        const bins = document.querySelectorAll('.bin');
+        
+        if (gameState.selectedNumbers.length > 0) {
+            bins.forEach(bin => {
+                bin.classList.add('bin-active');
+            });
+        } else {
+            bins.forEach(bin => {
+                bin.classList.remove('bin-active');
+            });
+        }
+    }
+    
+    // Initialize bin clickable areas
     function initBins() {
         const bins = document.querySelectorAll('.bin');
         
         bins.forEach((bin) => {
             const binIndex = Array.from(bins).indexOf(bin) + 1;
             
-            bin.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                bin.style.backgroundColor = 'rgba(0, 255, 255, 0.1)';
-            });
-            
-            bin.addEventListener('dragleave', () => {
-                bin.style.backgroundColor = '';
-            });
-            
-            bin.addEventListener('drop', (e) => {
-                e.preventDefault();
-                bin.style.backgroundColor = '';
-                
-                if (gameState.draggedNumber || gameState.selectedNumbers.length > 0) {
-                    // If dragging a number, add it to the bin
-                    if (gameState.draggedNumber) {
-                        addNumberToBin(gameState.draggedNumber, binIndex);
-                    }
+            // Make bins clickable to add selected numbers
+            bin.addEventListener('click', () => {
+                if (gameState.selectedNumbers.length > 0) {
+                    // Visual feedback
+                    bin.classList.add('bin-clicked');
+                    setTimeout(() => {
+                        bin.classList.remove('bin-clicked');
+                    }, 200);
                     
-                    // If numbers are selected, add them all to the bin
-                    if (gameState.selectedNumbers.length > 0) {
-                        gameState.selectedNumbers.forEach(number => {
-                            addNumberToBin(number, binIndex);
-                        });
-                        gameState.selectedNumbers = [];
-                    }
+                    // Add all selected numbers to this bin
+                    gameState.selectedNumbers.forEach(number => {
+                        addNumberToBin(number, binIndex);
+                    });
+                    
+                    // Clear selection
+                    gameState.selectedNumbers = [];
                     
                     // Update progress
                     updateProgress();
+                    
+                    // Update UI
+                    updateSelectionStatus();
                 }
+            });
+            
+            // Hover effect for bins
+            bin.addEventListener('mouseenter', () => {
+                if (gameState.selectedNumbers.length > 0) {
+                    bin.classList.add('bin-hover');
+                }
+            });
+            
+            bin.addEventListener('mouseleave', () => {
+                bin.classList.remove('bin-hover');
             });
         });
     }
@@ -242,9 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
             initGame();
         }
     });
-    
-    // Initialize bins for drag and drop
-    initBins();
     
     // Initialize the game
     initGame();
