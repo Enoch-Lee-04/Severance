@@ -2,9 +2,17 @@
 
 This directory is for storing image assets for the Severance MDR Simulator.
 
-You should add the following images here:
+## Current Images
 
-1. `lumon-logo.png` - The Lumon Industries logo (a white oval with "LUMON" text and globe lines)
-2. `favicon.ico` - A favicon for the browser tab
+1. **Severance-Lumon-Logo.jpg** - The Lumon Industries logo from the Apple TV+ show "Severance".
 
-Note: Since these images would be based on copyrighted content from the Apple TV+ show "Severance," they are not included in this repository to avoid copyright issues. You can create your own versions of these images or use placeholders. 
+The application is now configured to use this file directly from this location.
+
+## Other Optional Images
+
+You may also want to add:
+- **favicon.ico** - A favicon for the browser tab
+
+## Note
+
+These images are based on content from the Apple TV+ show "Severance" and are used here for educational/fan project purposes only. 

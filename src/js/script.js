@@ -34,9 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
         'Gettysburg', 'Fredericksburg', 'Cedar Creek'
     ];
     
+    // Calculate how many numbers to generate based on viewport size
+    function calculateNumbersCount() {
+        // Estimate based on screen size
+        const viewportWidth = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+        const viewportHeight = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+        
+        // Approximate how many cells will fit in the grid
+        // Assuming each cell is about 35px (including gap)
+        const columns = Math.floor(viewportWidth * 0.9 / 35);
+        const rows = Math.floor((viewportHeight * 0.6) / 35);
+        
+        // Ensure we have at least 20x20 = 400 numbers
+        return Math.max(columns * rows, 400);
+    }
+    
     // Game state
     let gameState = {
-        totalNumbers: 400, // 20x20 grid
+        totalNumbers: calculateNumbersCount(),
         selectedNumbers: [],
         completedNumbers: 0,
         bins: {
@@ -51,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initialize the game
     function initGame() {
+        // Update the total numbers count based on current viewport
+        gameState.totalNumbers = calculateNumbersCount();
+        
         // Clear the grid
         numberGrid.innerHTML = '';
         
@@ -58,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.selectedNumbers = [];
         gameState.completedNumbers = 0;
         
-        // Set random progress for bins
+        // Set bins progress to 0
         for (let bin = 1; bin <= 5; bin++) {
             gameState.bins[bin].progress = 0;
             updateBinProgress(bin);
@@ -208,6 +226,15 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         }
     }
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        // Only reinitialize if the grid size would change significantly
+        const newCount = calculateNumbersCount();
+        if (Math.abs(newCount - gameState.totalNumbers) > 100) {
+            initGame();
+        }
+    });
     
     // New file button
     newFileBtn.addEventListener('click', () => {

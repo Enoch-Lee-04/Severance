@@ -5,7 +5,7 @@ This project is a web-based simulator of the Macro Data Refinement (MDR) task fr
 ## Features
 
 - Authentic retro computer interface inspired by the show
-- Pure CSS implementation of the Lumon Industries logo with globe pattern and teardrop design
+- Displays the official Lumon Industries logo from the show
 - Grid of random numbers to categorize
 - Five different "emotion" bins to sort numbers into
 - Click to select numbers or drag and drop them directly
@@ -16,10 +16,11 @@ This project is a web-based simulator of the Macro Data Refinement (MDR) task fr
 ## How to Run
 
 1. Clone this repository
-2. Install dependencies with `npm install`
-3. Start the server with `npm start`
-4. Open `http://localhost:3000` in your browser
-5. Start categorizing numbers!
+2. Save the Lumon logo image to `public/images/lumon-logo.png` (see instructions in that directory)
+3. Install dependencies with `npm install`
+4. Start the server with `npm start`
+5. Open `http://localhost:3000` in your browser
+6. Start categorizing numbers!
 
 ## How to Play
 
@@ -34,10 +35,10 @@ This project is a web-based simulator of the Macro Data Refinement (MDR) task fr
 
 ## Technical Details
 
-- The Lumon logo is created entirely with CSS using pseudo-elements to create the globe pattern
-- The teardrop shape in the "O" of LUMON is implemented with a CSS pseudo-element
 - The interface uses CSS grid for the number display and flexbox for layout
 - Drag and drop functionality uses the HTML5 Drag and Drop API
+- Simple Node.js server to serve the web files
+- Responsive design that works on various screen sizes
 
 ## Note
 
