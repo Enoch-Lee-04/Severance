@@ -53,8 +53,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const columns = Math.floor(viewportWidth * 0.9 / 35);
         const rows = Math.floor((viewportHeight * 0.6) / 35);
         
-        // Return just enough numbers to fill the screen plus a small margin
-        return Math.max(columns * rows, 400);
+        // Add extra rows/columns to ensure no empty space
+        // Multiply by slightly more than what's strictly needed
+        const buffer = 1.2; // 20% more numbers than the exact viewport calculation
+        
+        // Return enough numbers to fill the screen completely plus buffer
+        return Math.max(Math.ceil(columns * rows * buffer), 400);
     }
     
     // Game state
@@ -294,14 +298,23 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomIndicatorTimeout = setTimeout(() => {
             zoomIndicator.classList.add('hidden');
         }, 2000);
+        
+        // Update grid columns count after zoom
+        updateGridColumns();
+    }
+    
+    // Update grid columns count
+    function updateGridColumns() {
+        // Force a reflow to get the actual computed columns
+        const gridStyle = window.getComputedStyle(numberGrid);
+        const gridTemplateColumns = gridStyle.getPropertyValue('grid-template-columns');
+        gameState.gridColumns = gridTemplateColumns.split(' ').length;
     }
     
     // Generate random numbers for the grid
     function generateNumbers() {
-        // Calculate number of columns to help with hover effects
-        const gridStyle = window.getComputedStyle(numberGrid);
-        const gridTemplateColumns = gridStyle.getPropertyValue('grid-template-columns');
-        gameState.gridColumns = gridTemplateColumns.split(' ').length;
+        // Update grid columns count before generating numbers
+        updateGridColumns();
         
         // Create a document fragment for better performance
         const fragment = document.createDocumentFragment();
@@ -317,19 +330,13 @@ document.addEventListener('DOMContentLoaded', () => {
             number.dataset.value = randomNum;
             
             // Add randomized floating animation properties
-            // Random x and y offset for floating (small enough to not break the grid layout)
-            const xOffset = (Math.random() * 6) - 3; // -3px to +3px
-            const yOffset = (Math.random() * 6) - 3; // -3px to +3px
+            const xOffset = (Math.random() * 6) - 3;
+            const yOffset = (Math.random() * 6) - 3;
+            const delay = Math.random() * 2000;
             
-            // Random animation delay (creates more organic movement)
-            const delay = Math.random() * 2000; // 0-2000ms delay
-            
-            // Apply as CSS custom properties
             number.style.setProperty('--x-offset', xOffset);
             number.style.setProperty('--y-offset', yOffset);
             number.style.setProperty('--animation-delay', delay);
-            
-            // No need for individual click handlers with event delegation
             
             fragment.appendChild(number);
             gameState.gridNumbers.push(number);
@@ -369,29 +376,43 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Highlight neighboring numbers
     function highlightNeighbors(centerNumber) {
+        // Update grid columns count before calculating neighbors
+        updateGridColumns();
+        
         const index = parseInt(centerNumber.dataset.index);
         const cols = gameState.gridColumns;
         
-        // Calculate neighbor indices
-        const neighbors = [
-            index - cols - 1, index - cols, index - cols + 1,  // Above
-            index - 1,                     index + 1,          // Sides
-            index + cols - 1, index + cols, index + cols + 1   // Below
+        // Get the current row and column of the center number
+        const centerRow = Math.floor(index / cols);
+        const centerCol = index % cols;
+        
+        // Define relative positions of neighbors (row, col)
+        const neighborPositions = [
+            [-1, -1], [-1, 0], [-1, 1], // top-left, top, top-right
+            [0, -1],           [0, 1],  // left, right
+            [1, -1],  [1, 0],  [1, 1]   // bottom-left, bottom, bottom-right
         ];
         
-        // Highlight neighbors
-        neighbors.forEach(neighborIndex => {
-            if (neighborIndex >= 0 && neighborIndex < gameState.gridNumbers.length) {
+        // Clear any existing highlights first
+        resetHighlights();
+        
+        // Add highlights to valid neighbors
+        neighborPositions.forEach(([rowOffset, colOffset]) => {
+            const neighborRow = centerRow + rowOffset;
+            const neighborCol = centerCol + colOffset;
+            
+            // Calculate the index of the neighbor
+            const neighborIndex = (neighborRow * cols) + neighborCol;
+            
+            // Check if the neighbor position is valid
+            if (
+                neighborRow >= 0 && neighborRow < Math.ceil(gameState.totalNumbers / cols) && // Valid row
+                neighborCol >= 0 && neighborCol < cols && // Valid column
+                neighborIndex >= 0 && neighborIndex < gameState.totalNumbers && // Valid index
+                Math.abs(neighborCol - centerCol) <= 1 // Ensure we're not wrapping to the next row
+            ) {
                 const neighborNumber = gameState.gridNumbers[neighborIndex];
-                // Only highlight if it's a direct neighbor (handles edge cases)
-                const centerRow = Math.floor(index / cols);
-                const neighborRow = Math.floor(neighborIndex / cols);
-                const centerCol = index % cols;
-                const neighborCol = neighborIndex % cols;
-                
-                // Make sure we're not wrapping to the next/previous row incorrectly
-                // Check both row and column differences to prevent wrapping
-                if (Math.abs(centerRow - neighborRow) <= 1 && Math.abs(centerCol - neighborCol) <= 1) {
+                if (neighborNumber) {
                     neighborNumber.classList.add('neighbor-highlight');
                 }
             }
@@ -454,20 +475,35 @@ document.addEventListener('DOMContentLoaded', () => {
         
         bins.forEach((bin) => {
             const binIndex = Array.from(bins).indexOf(bin) + 1;
+            const binLabelContainer = bin.querySelector('.bin-label-container');
+            
+            // Add flaps to bin
+            const leftFlap = document.createElement('div');
+            leftFlap.className = 'bin-flap-left';
+            
+            const rightFlap = document.createElement('div');
+            rightFlap.className = 'bin-flap-right';
+            
+            binLabelContainer.appendChild(leftFlap);
+            binLabelContainer.appendChild(rightFlap);
             
             // Make bins clickable to add selected numbers
             bin.addEventListener('click', () => {
                 if (gameState.selectedNumbers.length > 0) {
-                    // Visual feedback
+                    // Visual feedback - bin clicked and flaps open
                     bin.classList.add('bin-clicked');
+                    
+                    // Add all selected numbers to this bin with slight delay between each
+                    gameState.selectedNumbers.forEach((number, index) => {
+                        setTimeout(() => {
+                            addNumberToBin(number, binIndex, bin);
+                        }, index * 100); // 100ms delay between each number
+                    });
+                    
+                    // Close the flaps and reset after all numbers have fallen
                     setTimeout(() => {
                         bin.classList.remove('bin-clicked');
-                    }, 200);
-                    
-                    // Add all selected numbers to this bin
-                    gameState.selectedNumbers.forEach(number => {
-                        addNumberToBin(number, binIndex);
-                    });
+                    }, (gameState.selectedNumbers.length * 100) + 1000);
                     
                     // Clear selection
                     gameState.selectedNumbers = [];
@@ -494,11 +530,65 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     // Add a number to a bin
-    function addNumberToBin(numberElement, binIndex) {
-        // Make the number disappear from the grid instead of becoming transparent
+    function addNumberToBin(numberElement, binIndex, bin) {
+        // Get the positions for the animation
+        const numberRect = numberElement.getBoundingClientRect();
+        const binRect = bin.querySelector('.bin-label-container').getBoundingClientRect();
+        
+        // Create a clone of the number for the falling animation
+        const clone = numberElement.cloneNode(true);
+        clone.style.position = 'fixed';
+        clone.style.left = `${numberRect.left}px`;
+        clone.style.top = `${numberRect.top}px`;
+        clone.style.width = `${numberRect.width}px`;
+        clone.style.height = `${numberRect.height}px`;
+        
+        // Calculate the fall distance and direction
+        const fallX = binRect.left + (binRect.width / 2) - numberRect.left;
+        const fallY = binRect.top + (binRect.height / 2) - numberRect.top;
+        
+        // Add random rotation for more natural falling effect
+        const rotation = (Math.random() - 0.5) * 360; // Random rotation between -180 and 180 degrees
+        
+        // Set the custom properties for the animation
+        clone.style.setProperty('--fall-x', `${fallX}px`);
+        clone.style.setProperty('--fall-y', `${fallY}px`);
+        clone.style.setProperty('--fall-rotate', `${rotation}deg`);
+        
+        // Add the clone to the document
+        document.body.appendChild(clone);
+        clone.classList.add('falling');
+        
+        // Remove the clone after animation
+        setTimeout(() => {
+            clone.remove();
+        }, 800); // Match this with the animation duration
+        
+        // Make the original number disappear
         numberElement.classList.remove('selected');
-        numberElement.style.visibility = 'hidden'; // Hide the number but keep its space
+        numberElement.style.visibility = 'hidden';
         numberElement.style.pointerEvents = 'none';
+        
+        // Add delay before filling in the empty space
+        setTimeout(() => {
+            // Replace the hidden number with a new random number
+            const newNumber = Math.floor(Math.random() * 10);
+            numberElement.textContent = newNumber;
+            numberElement.dataset.value = newNumber;
+            
+            // Add randomized floating animation properties to the new number
+            const xOffset = (Math.random() * 6) - 3;
+            const yOffset = (Math.random() * 6) - 3;
+            const delay = Math.random() * 2000;
+            
+            numberElement.style.setProperty('--x-offset', xOffset);
+            numberElement.style.setProperty('--y-offset', yOffset);
+            numberElement.style.setProperty('--animation-delay', delay);
+            
+            // Make the new number visible and interactive
+            numberElement.style.visibility = 'visible';
+            numberElement.style.pointerEvents = 'auto';
+        }, 5000); // Delay of 5 seconds before filling in the space
         
         // Increment the bin's progress
         gameState.bins[binIndex].progress++;
