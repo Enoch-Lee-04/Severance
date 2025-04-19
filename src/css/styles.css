@@ -39,16 +39,18 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 2px solid rgb(172, 255, 255);
+    margin-bottom: 30px;
+    border-bottom: none;
     padding-bottom: 10px;
     flex-shrink: 0;
+    position: relative;
 }
 
 .location-info {
     display: flex;
     align-items: center;
     gap: 10px;
+    flex-grow: 1;
 }
 
 .location-name {
@@ -62,7 +64,7 @@ body {
 }
 
 .progress-bar-container {
-    width: 1600px;
+    width: 100%;
     height: 35px;
     background-color: #013;
     border: 1px solid rgb(172, 255, 255);
@@ -71,6 +73,7 @@ body {
     align-items: center;
     justify-content: space-between;
     overflow: hidden;
+    margin-top: 10px;
 }
 
 .progress-bar {
@@ -88,35 +91,46 @@ body {
     font-weight: bold;
     -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 1px rgb(172, 255, 255);
-    position: relative;
+    position: fixed;
+    right: 250px;
     z-index: 2;
-    margin-right: 10px;
+    margin-right: 20px;
     mix-blend-mode: difference;
 }
 
 /* Logo styles */
 .logo-container {
+    position: absolute;
+    right: 5px;
+    transform: translateX(-50%);
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-top: 15px;
 }
 
 .lumon-logo-img {
-    height: 50px;
+    height: 300px;
     width: auto;
-    max-width: 120px;
+    position: relative;
+    left: 100px;
+    max-width: 200px;
     object-fit: contain;
+    filter: brightness(0) saturate(100%) invert(89%) sepia(32%) saturate(794%) hue-rotate(127deg) brightness(106%) contrast(106%);
 }
 
 .number-grid-wrapper {
     flex-grow: 1;
     overflow: auto;
     position: relative;
-    border-bottom: 2px solid rgb(172, 255, 255);
+    border-top: 2px solid rgb(172, 255, 255);
+    padding-top: 20px;
     padding-bottom: 10px;
     scroll-behavior: smooth;
     will-change: transform;
     cursor: grab;
+    z-index: 1;
 }
 
 .number-grid-wrapper:active {
@@ -149,6 +163,7 @@ body {
     gap: 5px;
     min-height: 60vh;
     min-width: auto;
+    width: 100%;
     margin-bottom: 0;
     position: relative;
     transition: transform 0.3s ease;
@@ -226,6 +241,8 @@ body {
     background-color: #001;
     border-bottom: 2px solid rgb(172, 255, 255);
     gap: 20px;
+    position: relative;
+    z-index: 10;
 }
 
 .bin {
@@ -251,6 +268,8 @@ body {
     font-size: 20px;
     font-weight: bold;
     color: rgb(172, 255, 255);
+    position: relative;
+    z-index: 10;
 }
 
 .bin-label-container {
@@ -262,6 +281,47 @@ body {
     background-color: rgb(5, 17, 41);
     border: 3px solid rgb(172, 255, 255);
     margin-bottom: 5px;
+    position: relative;
+    overflow: visible;
+}
+
+/* Bin flaps that will open when clicked */
+.bin-flap-left, .bin-flap-right {
+    position: absolute;
+    top: -3px;
+    height: 10%;
+    width: 50%;
+    background-color: rgb(5, 17, 41);
+    border: 3px solid rgb(172, 255, 255);
+    border-bottom: none;
+    z-index: 15;
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    box-shadow: 0 0 8px rgba(172, 255, 255, 0.3) inset;
+    transform-style: preserve-3d;
+    backface-visibility: visible;
+}
+
+.bin-flap-left {
+    left: -3px;
+    transform-origin: left top;
+    border-right: none;
+}
+
+.bin-flap-right {
+    right: -3px;
+    transform-origin: right top;
+    border-left: none;
+}
+
+/* Animation for flaps opening */
+.bin-clicked .bin-flap-left {
+    transform: rotateZ(-120deg) translateY(-100%);
+    box-shadow: 0 0 15px rgba(172, 255, 255, 0.5);
+}
+
+.bin-clicked .bin-flap-right {
+    transform: rotateZ(120deg) translateY(-100%);
+    box-shadow: 0 0 15px rgba(172, 255, 255, 0.5);
 }
 
 .bin-progress-container {
@@ -378,3 +438,22 @@ body {
         width: 150px;
     }
 }
+
+/* Animation for numbers falling into bins */
+@keyframes fallIntoBin {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(var(--fall-x), var(--fall-y)) rotate(var(--fall-rotate));
+        opacity: 0;
+    }
+}
+
+.number.falling {
+    animation: fallIntoBin 0.8s ease-in forwards;
+    position: fixed;
+    z-index: 20;
+}
+
