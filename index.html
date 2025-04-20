@@ -7,7 +7,28 @@
     <link rel="stylesheet" href="src/css/styles.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Login Page -->
+    <div class="login-container" id="login-container">
+        <div class="login-logo-container">
+            <img src="public/images/Severance-Lumon-Logo-removebg-preview.png" alt="LUMON" class="login-logo">
+        </div>
+        <div class="login-form">
+            <div class="login-welcome">Welcome to Lumon Industries</div>
+            <input type="text" id="firstName" placeholder="First Name" required>
+            <input type="text" id="lastName" placeholder="Last Name" required>
+            <button class="login-button" id="login-button">Begin Work</button>
+        </div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-container" id="welcome-container">
+        <div class="welcome-message">
+            <div class="typing-text" id="typing-text"></div>
+        </div>
+    </div>
+
+    <!-- Main Content (existing) -->
+    <div class="container" id="main-container" style="display: none;">
         <div class="mdr-console">
             <div class="header">
                 <div class="location-info">
