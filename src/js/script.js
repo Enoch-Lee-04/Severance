@@ -733,13 +733,16 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Start typing animation
         let charIndex = 0;
-        const typingSpeed = 50; // milliseconds per character
+        const typingSpeed = 50; // slower base typing speed
         
         const typeChar = () => {
             if (charIndex < welcomeMessage.length) {
                 typingText.textContent += welcomeMessage.charAt(charIndex);
                 charIndex++;
-                setTimeout(typeChar, typingSpeed);
+                // Random pause between 100ms and 1000ms every 5-15 characters
+                const pause = (charIndex % (Math.floor(Math.random() * 10) + 5) === 0) ? 
+                    Math.random() * 90 + 100 : typingSpeed;
+                setTimeout(typeChar, pause);
             } else {
                 // After typing is complete, wait 3 seconds then show main content
                 setTimeout(() => {
