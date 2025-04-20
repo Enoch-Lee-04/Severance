@@ -1,4 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Login handling
+    const loginContainer = document.getElementById('login-container');
+    const mainContainer = document.getElementById('main-container');
+    const loginButton = document.getElementById('login-button');
+    const firstNameInput = document.getElementById('firstName');
+    const lastNameInput = document.getElementById('lastName');
+    
+    // Handle login
+    loginButton.addEventListener('click', () => {
+        const firstName = firstNameInput.value.trim();
+        const lastName = lastNameInput.value.trim();
+        
+        if (firstName && lastName) {
+            showWelcomeScreen(firstName, lastName);
+        } else {
+            // Shake inputs if empty
+            if (!firstName) firstNameInput.style.border = '2px solid red';
+            if (!lastName) lastNameInput.style.border = '2px solid red';
+            
+            setTimeout(() => {
+                firstNameInput.style.border = '2px solid rgb(172, 255, 255)';
+                lastNameInput.style.border = '2px solid rgb(172, 255, 255)';
+            }, 1000);
+        }
+    });
+    
+    // Handle enter key in inputs
+    [firstNameInput, lastNameInput].forEach(input => {
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginButton.click();
+            }
+        });
+        
+        // Clear red border on input
+        input.addEventListener('input', () => {
+            input.style.border = '2px solid rgb(172, 255, 255)';
+        });
+    });
+    
     // DOM Elements
     const numberGrid = document.getElementById('number-grid');
     const locationName = document.getElementById('location-name');
@@ -671,6 +711,47 @@ document.addEventListener('DOMContentLoaded', () => {
             initGame();
         }
     });
+    
+    // Welcome screen functionality
+    function showWelcomeScreen(firstName, lastName) {
+        const welcomeContainer = document.getElementById('welcome-container');
+        const typingText = document.getElementById('typing-text');
+        const mainContent = document.getElementById('main-content');
+        const loginContainer = document.getElementById('login-container');
+        
+        // Hide login container
+        loginContainer.style.display = 'none';
+        
+        // Show welcome container
+        welcomeContainer.style.display = 'flex';
+        
+        // Prepare welcome message
+        const welcomeMessage = `Welcome to Lumon ${firstName} ${lastName.charAt(0)}. You will be working as part of Lumon's Macrodata Refinement department. The work you'll be doing is mysterious and important. Good luck and praise Kier!`;
+        
+        // Reset typing text
+        typingText.textContent = '';
+        
+        // Start typing animation
+        let charIndex = 0;
+        const typingSpeed = 50; // milliseconds per character
+        
+        const typeChar = () => {
+            if (charIndex < welcomeMessage.length) {
+                typingText.textContent += welcomeMessage.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeChar, typingSpeed);
+            } else {
+                // After typing is complete, wait 3 seconds then show main content
+                setTimeout(() => {
+                    welcomeContainer.style.display = 'none';
+                    mainContainer.style.display = 'block';
+                }, 3000);
+            }
+        };
+        
+        // Start typing animation
+        typeChar();
+    }
     
     // Initialize the game
     initGame();
