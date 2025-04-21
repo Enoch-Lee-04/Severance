@@ -204,32 +204,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const gridWrapper = document.querySelector('.number-grid-wrapper');
             const scrollAmount = 40; // Pixels to scroll per keypress
             
-            // Arrow keys and WASD for navigation
-            switch(e.key) {
-                case 'ArrowUp':
-                case 'w':
-                case 'W':
-                    e.preventDefault();
-                    gridWrapper.scrollBy(0, -scrollAmount);
-                    break;
-                case 'ArrowDown':
-                case 's':
-                case 'S':
-                    e.preventDefault();
-                    gridWrapper.scrollBy(0, scrollAmount);
-                    break;
-                case 'ArrowLeft':
-                case 'a':
-                case 'A':
-                    e.preventDefault();
-                    gridWrapper.scrollBy(-scrollAmount * 2, 0); // Double horizontal scroll amount
-                    break;
-                case 'ArrowRight':
-                case 'd':
-                case 'D':
-                    e.preventDefault();
-                    gridWrapper.scrollBy(scrollAmount * 2, 0); // Double horizontal scroll amount
-                    break;
+            // Only handle navigation if we're in the main game screen
+            if (mainContainer.style.display === 'block') {
+                // Arrow keys and WASD for navigation
+                switch(e.key) {
+                    case 'ArrowUp':
+                    case 'w':
+                    case 'W':
+                        e.preventDefault();
+                        gridWrapper.scrollBy(0, -scrollAmount);
+                        break;
+                    case 'ArrowDown':
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        gridWrapper.scrollBy(0, scrollAmount);
+                        break;
+                    case 'ArrowLeft':
+                    case 'a':
+                    case 'A':
+                        e.preventDefault();
+                        gridWrapper.scrollBy(-scrollAmount * 2, 0);
+                        break;
+                    case 'ArrowRight':
+                    case 'd':
+                    case 'D':
+                        e.preventDefault();
+                        gridWrapper.scrollBy(scrollAmount * 2, 0);
+                        break;
+                }
             }
         });
         
@@ -719,37 +722,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainContent = document.getElementById('main-content');
         const loginContainer = document.getElementById('login-container');
         
-        // Hide login container
-        loginContainer.style.display = 'none';
-        
-        // Show welcome container
-        welcomeContainer.style.display = 'flex';
-        
-        // Prepare welcome message
+        // Prepare welcome message first
         const welcomeMessage = `Welcome to Lumon ${firstName} ${lastName.charAt(0)}. You will be working as part of Lumon's Macrodata Refinement department. The work you'll be doing is mysterious and important. Good luck and praise Kier!`;
         
         // Reset typing text
         typingText.textContent = '';
         
-        // Start typing animation
+        // Hide login and show welcome container in one go
+        loginContainer.style.display = 'none';
+        welcomeContainer.style.display = 'flex';
+        
+        // Start typing animation immediately
         let charIndex = 0;
-        const typingSpeed = 50; // slower base typing speed
+        const typingSpeed = 50;
         
         const typeChar = () => {
-            if (charIndex < welcomeMessage.length) {
-                typingText.textContent += welcomeMessage.charAt(charIndex);
-                charIndex++;
-                // Random pause between 100ms and 1000ms every 5-15 characters
-                const pause = (charIndex % (Math.floor(Math.random() * 10) + 5) === 0) ? 
-                    Math.random() * 90 + 100 : typingSpeed;
-                setTimeout(typeChar, pause);
-            } else {
-                // After typing is complete, wait 3 seconds then show main content
-                setTimeout(() => {
-                    welcomeContainer.style.display = 'none';
-                    mainContainer.style.display = 'block';
-                }, 3000);
-            }
+            // Set first character and immediately make it visible
+            typingText.textContent = welcomeMessage.charAt(0);
+            typingText.style.clipPath = 'inset(0 0 0 0)'; // Bypass animation for first character
+            charIndex = 1;
+            
+            const continueTyping = () => {
+                if (charIndex < welcomeMessage.length) {
+                    typingText.textContent += welcomeMessage.charAt(charIndex);
+                    charIndex++;
+                    const pause = (charIndex % (Math.floor(Math.random() * 10) + 5) === 0) ? 
+                        Math.random() * 90 + 100 : typingSpeed;
+                    setTimeout(continueTyping, pause);
+                } else {
+                    setTimeout(() => {
+                        welcomeContainer.style.display = 'none';
+                        mainContainer.style.display = 'block';
+                    }, 3000);
+                }
+            };
+            
+            // Start subsequent characters with animation
+            typingText.style.clipPath = ''; // Reset to CSS animation
+            void typingText.offsetWidth; // Trigger reflow
+            continueTyping();
         };
         
         // Start typing animation
