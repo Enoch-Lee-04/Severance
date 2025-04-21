@@ -588,24 +588,12 @@ body {
 .typing-text {
     white-space: pre-wrap;
     overflow: hidden;
-    width: 0;
+    width: 100%;
     text-align: left;
     animation: typing 4s steps(200) forwards;
 }
 
 @keyframes typing {
-    to { width: 100%; }
-}
-
-.typing-text {
-    white-space: pre-wrap;
-    overflow: hidden;
-    width: 0;
-    text-align: left;
-    animation: typing 4s steps(200) forwards;
-}
-
-@keyframes typing {
-    to { width: 100%; }
+    to { --typing-width: 100%; }
 }
 
